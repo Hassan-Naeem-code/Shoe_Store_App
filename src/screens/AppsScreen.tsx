@@ -1,14 +1,71 @@
-import React from "react";
-import { StyleSheet, Text, View,ScrollView,TouchableOpacity,Image } from "react-native";
+import React,{useState,useRef} from "react";
+import { StyleSheet, Text, View,ScrollView,TouchableOpacity,Image,Animated } from "react-native";
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
-
+import Display from 'react-native-display';
+let category = [
+  {
+    name:'All'
+  },
+  {
+    name:'Shoes'
+  },
+  {
+    name:'T-Shirt'
+  },
+  {
+    name:'Hoddie'
+  },
+  {
+    name:'Accessories'
+  },
+  {
+    name:'Watch'
+  },
+  {
+    name:'Perfumes'
+  }
+]
 export const AppsScreen = () => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnimation = useRef(new Animated.Value(1)).current;
+  const [check,setCheck] = useState(false);
+  const [enable,setEnable] = useState(true);
+  const [value,setValue] = useState('All');
+  const fadeIn = () => {
+    // Will change fadeAnim value to 1 in 5 seconds
+    setCheck(!check);
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 2000
+    }).start();
+    Animated.timing(fadeAnimation, {
+      toValue: 0,
+      duration: 2000
+    }).start();
+  };
+
+  const fadeOut = () => {
+    // Will change fadeAnim value to 0 in 3 seconds
+    setCheck(!check);
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 2000
+    }).start();
+    Animated.timing(fadeAnimation, {
+      toValue: 1,
+      duration: 2000
+    }).start();
+  };
+  const checkCondition = (getVar) =>{
+    setValue(getVar);
+  }
   return (
     <View style={styles.container}>
+      <ScrollView style={{marginBottom:45}}>
      <View style={styles.topbar}>
         <TouchableOpacity
           style={styles.headericon}>
@@ -30,79 +87,47 @@ export const AppsScreen = () => {
           showsHorizontalScrollIndicator={false}
           pagingEnabled={true} style={{paddingTop:5,paddingLeft:18,paddingRight:18}}>
           <View style={{flexDirection:'row'}}>
-            <Text style={{marginRight:14,fontSize:15,fontWeight:'700',color:'orange'}}>Hello</Text>
-            <Text style={{marginRight:14,fontSize:15,fontWeight:'700'}}>Hello</Text>
-            <Text style={{marginRight:14,fontSize:15,fontWeight:'700'}}>Hello</Text>
-            <Text style={{marginRight:14,fontSize:15,fontWeight:'700'}}>Hello</Text>
-            <Text style={{marginRight:14,fontSize:15,fontWeight:'700'}}>Hello</Text>
+            {
+              category && category.length > 0 ? (
+                category.map((item,index)=>{
+                  return(
+                    <TouchableOpacity onPress={()=>{checkCondition(item.name)}}>
+                      <Text key={index} style={{marginRight:14,fontSize:15,fontWeight:'700',color:value == item.name ? 'orange' :'black',textTransform:'uppercase'}}>{item.name}</Text>
+                    </TouchableOpacity>
+                  )
+                })
+              ) : null
+            }
           </View>
      </ScrollView>
      </View>
      <View style={{padding:20}}>
      <ScrollView showsVerticalScrollIndicator={false}>
      <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-            <TouchableOpacity
-                    style={styles.cards}>
-                    <View style={styles.carddir}>
-                      <View style={styles.cat}>
-                        <Text
-                          style={{
-                            fontSize: 13,
-                          }}>
-                          {' '}
-                          Vegetables{' '}
-                        </Text>
-                      </View>
-
-                    </View>
-
-                    <View style={styles.center}>
-                      <Image
-                        resizeMode="contain"
-                        style={{height: 100, width: 150}}
-                        source={{
-                          uri:
-                            'https://jeebajijee.pk/public/images/products/featured/1608038095MuttonPayafresh.png'
-                        }}
-                      />
-
-                      <Text style={{fontSize: 16, fontWeight: 'bold',textTransform:'capitalize'}}>
-                        dgff
-                      </Text>
-                    </View>
-
-                    <View style={styles.carddir}>
-                      <Text
-                        style={{
-                          color: '#096d39',
-                          fontSize: 16,
-                          fontWeight: 'bold',
-                        }}>
-                        RS. 110
-                      </Text>
-
-                      <Text
-                        style={{
-                          color: 'red',
-                          fontSize: 12,
-                          textDecorationLine: 'line-through',
-                        }}>
-                        Rs. 20
-                      </Text>
-                    </View>
-
-                  </TouchableOpacity>
-            <TouchableOpacity
-                    style={styles.cards}>
+     <TouchableOpacity style={styles.cards}>
+       <Animated.View style={{opacity:fadeAnimation}}>
                     <View style={styles.carddir}>
                       <View>
                         <Text
                           style={{
-                            fontSize: 16,
-                            fontWeight:'700'
+                            fontSize: 14,
+                            fontWeight:'bold'
                           }}>
                           {' '}
                           Vegetables{' '}
+                        </Text>
+                      </View>
+
+                    </View>
+                    <View style={styles.carddir}>
+                      <View style={{width:wp('28%'),marginTop:5}}>
+                        <Text numberOfLines={2}
+                          style={{
+                            fontSize: 18,
+                            fontWeight:'900'
+                          }}>
+                          {' '}
+                          Vegetables bsjchvhsdc n{' '}
                         </Text>
                       </View>
 
@@ -117,46 +142,88 @@ export const AppsScreen = () => {
                             'https://jeebajijee.pk/public/images/products/featured/1608038095MuttonPayafresh.png'
                         }}
                       />
-
-                      <Text style={{fontSize: 16, fontWeight: 'bold',textTransform:'capitalize'}}>
-                        dgff
-                      </Text>
                     </View>
 
                     <View style={styles.carddir}>
                       <Text
                         style={{
-                          color: '#096d39',
+                          color: 'black',
                           fontSize: 16,
                           fontWeight: 'bold',
                         }}>
                         RS. 110
                       </Text>
 
-                      <Text
-                        style={{
-                          color: 'red',
-                          fontSize: 12,
-                          textDecorationLine: 'line-through',
-                        }}>
-                        Rs. 20
-                      </Text>
                     </View>
-                    <View style={{position:'absolute',bottom:0,right:0,backgroundColor:'orange',borderBottomRightRadius:10,padding:8,borderTopLeftRadius:10}}>
-                      <AntDesign name={'plus'} size={20} color={'#fff'} />
+        </Animated.View>
+        <Animated.View
+        style={
+          {
+            // Bind opacity to animated value
+            opacity: fadeAnim,
+            position:'absolute'
+          }
+        }
+      >
+        <View style={styles.carddir}>
+                      <View style={{width:wp('42%'),padding:10}}>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            fontWeight:'bold',textAlign:'center',color:'orange'
+                          }}>
+                          {' '}
+                          Vegetables{' '}
+                        </Text>
+                      </View>
+
                     </View>
-                  </TouchableOpacity>
+                    <View style={[styles.carddir,{  borderTopColor: 'lightgray',
+    borderTopWidth: 1,}]}>
+                      <View style={{width:wp('42%'),padding:10}}>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            fontWeight:'bold',textAlign:'center',color:'orange'
+                          }}>
+                          {' '}
+                          Vegetables{' '}
+                        </Text>
+                      </View>
+
+                    </View>
+                    <View style={styles.carddir}>
+                      <View style={{width:wp('42%'),padding:10,backgroundColor:'orange',height:hp('21.5%'),borderRadius:20,alignItem:'center',justifyContent:'center',borderTopRightRadius:35,borderTopLeftRadius:35}}>
+                        <TouchableOpacity onPress={()=>{fadeOut()}}>
+                          <Text
+                            style={{
+                              fontSize: 14,
+                              fontWeight:'bold',textAlign:'center',color:'#fff'
+                            }}>
+                            {' '}
+                            <AntDesign name={'shoppingcart'} size={20} color={'#fff'} />{'  '}Add To Cart
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+
+                    </View>
+                     
+                
+      </Animated.View>
+              {
+                !check ? 
+              
+                          <TouchableOpacity onPress={()=>{fadeIn()}} style={{position:'absolute',bottom:0,right:0,backgroundColor:'orange',borderBottomRightRadius:10,padding:10,borderTopLeftRadius:10}}>
+                              <AntDesign name={'plus'} size={20} color={'#fff'} />
+                          </TouchableOpacity>
+            :null  
+            }
+      </TouchableOpacity>
+    
           </View>
      </ScrollView>
      </View>
-      
-     {/* <View style={{flex:20,backgroundColor:'red'}}>
-     <ScrollView horizontal={true}>
-       <View style={{backgroundColor:'red'}}>
-         <Text>Hello</Text>
-       </View>
      </ScrollView>
-     </View> */}
     </View>
   );
 };
@@ -213,7 +280,8 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     width: wp('42%'),
     height:hp('32%'),
-    position:'relative'
+    position:'relative',
+    elevation:5
   },
   carddir: {
     flexDirection: 'row',
@@ -235,5 +303,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderRadius: 30,
     height: hp('5%'),
+  },
+  fadingContainer: {
+    padding: 20,
+    backgroundColor: "orange"
+  },
+  fadingText: {
+    fontSize: 28
   },
 });
