@@ -31,7 +31,7 @@ let category = [
     name:'Perfumes'
   }
 ]
-export const AppsScreen = () => {
+export const AppsScreen = ({navigation}) => {
   const dispatch = useDispatch();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const fadeAnimation = useRef(new Animated.Value(1)).current;
@@ -126,15 +126,15 @@ return (
          data && data.length > 0 ? (
            data.map((item,index)=>{
              return(
-              <TouchableOpacity style={styles.cards} key={index}>
+              <TouchableOpacity style={styles.cards} key={index} onPress={()=>{navigation.navigate('SingleProduct',{id:item.id})}}>
                 {
-                  getVal == item.Name ? (
-                    <Animated.View
+                  getVal == item.id ? (
+                    <Animated.View key={index}
                     style={
                       {
                         // Bind opacity to animated value
                         opacity: fadeAnim,
-                        position:'absolute'
+                        position:  'absolute',
                       }
                     }
                   >
@@ -152,7 +152,7 @@ return (
             
                                 </View>
                                 <View style={[styles.carddir,{  borderTopColor: 'lightgray',
-                borderTopWidth: 1,}]}>
+                borderTopWidth: 1,width:wp('40%')}]}>
                                   <View style={{width:wp('42%'),padding:10}}>
                                     <Text
                                       style={{
@@ -166,7 +166,7 @@ return (
             
                                 </View>
                                 <View style={styles.carddir}>
-                                  <View style={{width:wp('42%'),padding:10,backgroundColor:'orange',height:hp('21.5%'),borderRadius:20,alignItem:'center',justifyContent:'center',borderTopRightRadius:35,borderTopLeftRadius:35}}>
+                                  <View style={{width:wp('40%'),padding:10,backgroundColor:'orange',height:hp('20%'),borderRadius:20,alignItem:'center',justifyContent:'center',borderTopRightRadius:35,borderTopLeftRadius:35}}>
                                     <TouchableOpacity onPress={()=>{fadeOut()}}>
                                       <Text
                                         style={{
@@ -184,7 +184,7 @@ return (
                             
                   </Animated.View>
                   ) : (
-                    <Animated.View style={{opacity:getVal == item.Name ? fadeAnimation : 1}}>
+                    <Animated.View style={{opacity:getVal == item.id ? fadeAnimation : 1}} key={index}>
                     <View style={styles.carddir}>
                       <View>
                         <Text
@@ -203,7 +203,7 @@ return (
                         <Text numberOfLines={2}
                           style={{
                             fontSize: 18,
-                            fontWeight:'900'
+                            fontWeight:'900',
                           }}>
                           {' '}
                           {item.Name}
@@ -237,9 +237,9 @@ return (
 
 
                      {
-                       getVal !== item.Name ? 
+                       getVal !== item.id ? 
                      
-                                 <TouchableOpacity onPress={()=>{fadeIn(item.Name)}} style={{position:'absolute',bottom:0,right:0,backgroundColor:'orange',borderBottomRightRadius:10,padding:10,borderTopLeftRadius:10}}>
+                                 <TouchableOpacity onPress={()=>{fadeIn(item.id)}} style={{position:'absolute',bottom:0,right:0,backgroundColor:'orange',borderBottomRightRadius:10,padding:10,borderTopLeftRadius:10}}>
                                      <AntDesign name={'plus'} size={20} color={'#fff'} />
                                  </TouchableOpacity>
                    :null  
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#fff',
     borderRadius: 25,
-    width: wp('42%'),
+    width: wp('40%'),
     height:hp('32%'),
     position:'relative',
     elevation:5

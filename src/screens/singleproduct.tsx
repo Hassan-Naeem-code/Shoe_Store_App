@@ -17,7 +17,6 @@ import {
   TouchableRipple,
   Text,
 } from 'react-native-paper';
-import AnimatedLoader from 'react-native-animated-loader';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -28,8 +27,20 @@ import IconBadge from 'react-native-icon-badge';
 import Carousel, {Pagination} from 'react-native-snap-carousel';
 import { connect } from 'react-redux';
 import {addToCart, minusFromCart,wishlistAdd} from '../../Store/actions/cart';
+import Firestore from '@react-native-firebase/firestore';
 
 const images = [];
+let getImage=[
+  {
+    Image: 'https://smallimg.pngkey.com/png/small/78-789008_nike-shoes-png-nike-rubber-shoes-2017.png',
+  },
+  {
+    Image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWv4qe3TWMBUWuDc5iLN-QdiLGf23XzQrvVg&usqp=CAU'
+  },
+  {
+    Image:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQC7EXpN__IJaeKEagNnNJn6J_pRmVicI9BAw&usqp=CAU'
+  }
+];
 const regex = /(<([^>]+)>)/ig;
 class SingleProduct extends Component {
   constructor(props) {
@@ -42,7 +53,8 @@ class SingleProduct extends Component {
       arrayvar:[],
       isDataHasArrived:true,
       obj:{},
-      check:false
+      check:false,
+      getImage:[]
     };
   }
 
@@ -60,32 +72,25 @@ class SingleProduct extends Component {
 
  
   componentDidMount() {
+    Firestore().collection('data').where("id", "==", this.props.route.params.id)
+    .onSnapshot((snapshot) => {
+     snapshot.docChanges().forEach((change) => {
+         if (change.type === "added") {
+          this.setState({
+                    arrayvar: [...this.state.arrayvar, change.doc.data()]
+                  });
 
-    fetch(
-      'https://jeebajijee.pk/api/v1/product-detail?client_key=iFXaRolCMQzEPV9PjWESluNEGzP9W9qX&product_id=' +
-        this.props.route.params.productId,
-    )
-      .then(response => response.json())
-      .then(json => {
-        let ref = 'https://jeebajijee.pk/public/images/products/featured/';
-        if(images.length !== 0){
-          images.splice(0);
-          images.push(json.data.product);
-        }
-        else{
-          images.push(json.data.product);
-        }
-        this.setState({
-            arrayvar: [...this.state.arrayvar, json.data.product]
-          })
-          this.setState({obj:json.data.product});
-      });
-  }
+            this.setState({obj:change.doc.data()});
+            getImage.push(change.doc.data());
+         }
+     });
+    }
+    )}
   componentWillUnmount(){
-    images.push(images.splice(0));
     this.setState({
         arrayvar: [...this.state.arrayvar, this.state.arrayvar.splice(0)]
-      })
+      });
+      getImage.splice(0);
   }
   addToCart = ()=>{
     this.props.dispatch(addToCart(this.state.obj));
@@ -95,30 +100,19 @@ class SingleProduct extends Component {
     this.props.dispatch(minusFromCart(this.state.obj));
   }
    wishlist = (item) =>{
-    if(this.props.user_Guest !== 'Guest'){
-      let id =  this.props.user.id;
       let info = {
-        prd_id:item.prd_id,
-        id,
+        prd_id:item.id,
         item
       }
      this.props.dispatch(wishlistAdd(info,1));
-    }else{
-      this.props.navigation.navigate('Signin');
-    }
   
   }
   deletewishlist = (item) =>{
-    if(user_Guest !== 'Guest'){
-      let id = user.id;
       let info = {
-        prd_id:item.prd_id,
-        id,item
+        prd_id:item.id,
+        id:item
       }
       this.props.dispatch(wishlistAdd(info,2));
-    }else{
-      this.props.navigation.navigate('Signin');
-    }
   }
 
   removeFromCart = ()=>{
@@ -129,22 +123,22 @@ class SingleProduct extends Component {
   }
   _renderItem({item, index}) {
     return (
-        images && images.length > 0 ? images.map((item,index)=>{
-            return(
+      getImage.length > 0 ? (
+
 <View key={index}
         style={{
-          width: wp('50%'),
+          width: wp('100%'),
           height: hp('30%'),
           justifyContent: 'center',
           alignItems: 'center',
         }}>
         <Image
-          style={{height: 150, width: 150}}
-          source={{uri: 'https://jeebajijee.pk/public/images/products/featured/'+ item.featured_image}}
+          style={{height: 150, width: 300}}
+          source={{uri:item.Image}}
         />
       </View>
-            )
-        }) : null
+      ) : null
+           
       
     )
   }
@@ -152,7 +146,7 @@ class SingleProduct extends Component {
     const {entries, activeSlide} = this.state;
     return (
       <Pagination
-        dotsLength={images.length}
+        dotsLength={getImage.length}
         activeDotIndex={activeSlide}
         containerStyle={{
           width: wp('100%'),
@@ -162,8 +156,8 @@ class SingleProduct extends Component {
           height: 15,
           borderRadius: 100,
           marginHorizontal: 1,
-          borderColor: '#096d39',
-          backgroundColor: '#096d39',
+          borderColor: 'orange',
+          backgroundColor: 'orange',
         }}
         inactiveDotStyle={
           {
@@ -189,55 +183,28 @@ class SingleProduct extends Component {
   }
 
   render() {
+    console.log('cjsdcjvsdch',getImage);
     return (
       <View style={styles.container}>
-        <StatusBar backgroundColor="#096d39" />
+        <StatusBar backgroundColor="orange" />
 
         <View style={styles.topbar}>
           <TouchableOpacity
             onPress={() => this.props.navigation.goBack()}
             style={{flex: 1, alignItems: 'flex-start'}}>
-            <Icon1 name="chevron-left" size={20} color="#096d39" />
+            <Icon1 name="chevron-left" size={20} color="orange" />
           </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => this.props.navigation.navigate('Cart')}
-            style={styles.headericon}>
-            <IconBadge
-              MainElement={
-                <Image
-                  resizeMode="contain"
-                  style={{height: 20, width: 20}}
-                  source={require('./../assets/Cart-green.png')}
-                />
-              }
-              BadgeElement={
-                <Text style={{color: '#fff', fontSize: 5}}>
-                  {this.state.cartCount}
-                </Text>
-              }
-              IconBadgeStyle={{
-                position: 'absolute',
-                top: 0.1,
-                right: 0.1,
-                minWidth: 10,
-                height: 10,
-                borderRadius: 100,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#97C53E',
-              }}
-              Hidden={this.state.cartCount == 1}
-            />
+          <TouchableOpacity style={{flex:6}}>
+          <Text style={{fontSize:18,fontWeight:'bold'}}>Categories</Text>
           </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.main}>
           <View style={styles.carousel}>
             <Carousel
-              data={images}
+              data={getImage}
               renderItem={this._renderItem}
-              sliderWidth={wp('50%')}
+              sliderWidth={wp('100%')}
               itemWidth={wp('100%')}
               onSnapToItem={index => this.setState({activeSlide: index})}
             />
@@ -257,136 +224,37 @@ class SingleProduct extends Component {
               <View
                 style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
                 <Text style={{fontSize: 20, fontWeight: 'bold',textTransform:'capitalize'}}>
-                  {item.title}{'\t\t'}
+                  {item.Name}{'\t\t'}
                 </Text>
 
                 <View style={styles.cat}>
                   <Text
                     style={{
-                      fontSize: 10,textTransform:'capitalize'
+                      fontSize: 10,textTransform:'capitalize',
+                      color:'white'
                     }}>
-                    {item.cat_title}
+                    {item.Category}
                   </Text>
                 </View>
               </View>
-{
-  item.d_percentage != 0 ? (
-    <View
-                style={{
-                  flex: 1,
-                  justifyContent: 'flex-end',
-                  alignItems: 'flex-end',
-                }}>
-                <View
-                  style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
-                  <View style={styles.discount}>
-                    <Text
-                      style={{
-                        fontSize: 10,
-                        color: '#096d39',
-                      }}>
-                      00
-                    </Text>
-                  </View>
-
-                  <Text
-                    style={{
-                      fontSize: 10,
-                      color: '#096d39',
-                    }}>
-                    {'\t'} : {'\t'}
-                  </Text>
-
-                  <View style={styles.discount}>
-                    <Text
-                      style={{
-                        fontSize: 10,
-                        color: '#096d39',
-                      }}>
-                      50
-                    </Text>
-                  </View>
-
-                  <Text
-                    style={{
-                      fontSize: 10,
-                      color: '#096d39',
-                    }}>
-                    {'\t'} : {'\t'}
-                  </Text>
-
-                  <View style={styles.discount}>
-                    <Text
-                      style={{
-                        fontSize: 10,
-                        color: '#096d39',
-                      }}>
-                      15
-                    </Text>
-                  </View>
-                </View>
-
-                <Text
-                  style={{
-                    fontSize: 10,
-                    color: '#b1b1b1',
-                  }}>
-                  Discount ends in
-                </Text>
-              </View>
-  ):null
-}
               
             </View>
 
           
 
             <View style={[styles.rows, {height: hp('8%')}]}>
-            {
-              item.d_percentage != 0 ? (
-                <View style={{flex: 1}}>
-                <View style={styles.rows}>
-                  <Text
-                    style={{
-                      textDecorationLine: 'line-through',
-                      color: '#b1b1b1',
-                      fontSize: 10,
-                    }}>
-                    Rs. {item.price}/{item.unit_description} {'\t\t'}
-                  </Text>
-
-                  <Text
-                    style={{
-                      color: 'red',
-                      fontSize: 10,
-                    }}>
-                    Save {item.d_percentage}%
-                  </Text>
-                </View>
-
-                <Text
-                  style={{
-                    color: '#096d39',
-                    fontSize: 24,
-                    fontWeight: 'bold',
-                  }}>
-                  Save {item.d_percentage}%
-                </Text>
-              </View>
-              ) : (
+          
                 <View style={{flex: 1}}>
 
                 <Text
                   style={{
-                    color: '#096d39',
+                    color: 'orange',
                     fontSize: 24,
                     fontWeight: 'bold',
                   }}>
-                  Rs.{item.price}
+                  Rs.{item.Price}
                 </Text>
               </View>
-              )
-            }
               
 
               <View
@@ -444,7 +312,7 @@ class SingleProduct extends Component {
             </Text>
 
             <Text>
-            {item.long_desc.replace(regex, '')}
+            {item.Description.replace(regex, '')}
             </Text>
 
             <Text
@@ -456,7 +324,7 @@ class SingleProduct extends Component {
             </Text>
 
             <Text>
-              {item.short_desc.replace(regex, '')}
+              {item.ShortDescription.replace(regex, '')}
             </Text>
           </View>
             )
@@ -466,15 +334,15 @@ class SingleProduct extends Component {
          
         </ScrollView>
 
-        <View style={[styles.rows, {backgroundColor: '#fff'}]}>
+        <View style={[styles.rows, {backgroundColor: '#fff',marginBottom:60}]}>
         {
           this.props.wishlist && this.props.wishlist.length > 0 && this.props.wishlist.find(el => el.id === this.state.obj.id) ? (
-                        <TouchableOpacity onPress={() => this.deletewishlist(this.state.obj)} style={[styles.touch,
+                        <TouchableOpacity style={[styles.touch,
                             {
                               flex: 1,
                               backgroundColor: 'transparent',
                               borderWidth: 1,
-                              borderColor: '#096d39',
+                              borderColor: 'orange',
                             },
                           ]}>
                           <Image
@@ -482,12 +350,12 @@ class SingleProduct extends Component {
                           />
                         </TouchableOpacity>
                       ) : (
-                        <TouchableOpacity  onPress={() => this.wishlist(this.state.obj)} style={[styles.touch,
+                        <TouchableOpacity style={[styles.touch,
                             {
                               flex: 1,
                               backgroundColor: 'transparent',
                               borderWidth: 1,
-                              borderColor: '#096d39',
+                              borderColor: 'orange',
                             },
                           ]}>
                           <Image source={require('./../assets/wishlist-empty.png')} />
@@ -497,7 +365,6 @@ class SingleProduct extends Component {
           {
             this.props.cart.find(el=> el.id === this.state.obj.id) ? (
               <TouchableOpacity
-            onPress={() => this.checkOut()}
             style={[styles.touch, {flex: 3, backgroundColor: 'rgb(245,155,36)'}]}>
             <Text style={styles.txtbtn}>CheckOut</Text>
           </TouchableOpacity>
@@ -522,18 +389,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   topbar: {
-    backgroundColor: '#D7F1E4',
+    backgroundColor: 'lightgray',
     height: hp('10%'),
     padding: 20,
     alignItems: 'flex-end',
     flexDirection: 'row',
   },
   main: {
-    backgroundColor: '#D7F1E4',
+    backgroundColor: 'lightgray',
   },
   carousel: {
     height: hp('40%'),
-    backgroundColor: '#D7F1E4',
+    backgroundColor: 'lightgray',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -543,20 +410,26 @@ const styles = StyleSheet.create({
     borderTopStartRadius: 30,
     borderTopEndRadius: 30,
     padding: 20,
+    elevation:5
   },
   discount: {
     width: 20,
     height: 20,
     borderWidth: 1,
-    borderColor: '#096d39',
+    borderColor: 'orange',
     borderRadius: 100,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
   cat: {
-    backgroundColor: '#C0F1DB',
+    backgroundColor: 'orange',
+    paddingTop:5,
+    paddingLeft:12,
+    paddingRight:12,
+    paddingBottom:5,
     borderRadius: 30,
+    elevation:5
   },
 
   rows: {
@@ -588,8 +461,6 @@ const styles = StyleSheet.create({
 const mapStateToProps = (state) => {
   return {
     cart: state.cart.cart,
-    user: state.auth.auth,
-  user_Guest: state.auth.guest,
   wishlist: state.cart.wishlist} 
 };
 export default connect(mapStateToProps)(SingleProduct);
