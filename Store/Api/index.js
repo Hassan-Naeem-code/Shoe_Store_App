@@ -1,0 +1,1 @@
+export const JBJURL = 'https://jeebajijee.pk/api/v1/';
