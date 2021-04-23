@@ -1,11 +1,13 @@
-import React,{useState,useRef} from "react";
+import React,{useState,useRef,useEffect} from "react";
 import { StyleSheet, Text, View,ScrollView,TouchableOpacity,Image,Animated } from "react-native";
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
-import Display from 'react-native-display';
+import Firestore from '@react-native-firebase/firestore';
+import {getAllData} from '../../Store/actions/products';
+import {useDispatch,useSelector} from 'react-redux';
 let category = [
   {
     name:'All'
@@ -30,13 +32,22 @@ let category = [
   }
 ]
 export const AppsScreen = () => {
+  const dispatch = useDispatch();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const fadeAnimation = useRef(new Animated.Value(1)).current;
   const [check,setCheck] = useState(false);
   const [enable,setEnable] = useState(true);
   const [value,setValue] = useState('All');
-  const fadeIn = () => {
+  const [getVal,setGetVal] = useState('');
+  const fadeIn = (value) => {
     // Will change fadeAnim value to 1 in 5 seconds
+    if(getVal == ''){
+      setGetVal(value);
+    }
+    else{
+      setGetVal('');
+      setGetVal(value);
+    }
     setCheck(!check);
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -50,6 +61,7 @@ export const AppsScreen = () => {
 
   const fadeOut = () => {
     // Will change fadeAnim value to 0 in 3 seconds
+    setGetVal('');
     setCheck(!check);
     Animated.timing(fadeAnim, {
       toValue: 0,
@@ -63,7 +75,13 @@ export const AppsScreen = () => {
   const checkCondition = (getVar) =>{
     setValue(getVar);
   }
-  return (
+  useEffect(()=>{
+   dispatch(getAllData());
+
+},[])
+const data = useSelector(({products})=>{return products.data});
+console.log('uvisduivsdiuv',data);
+return (
     <View style={styles.container}>
       <ScrollView style={{marginBottom:45}}>
      <View style={styles.topbar}>
@@ -104,8 +122,69 @@ export const AppsScreen = () => {
      <View style={{padding:20}}>
      <ScrollView showsVerticalScrollIndicator={false}>
      <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-     <TouchableOpacity style={styles.cards}>
-       <Animated.View style={{opacity:fadeAnimation}}>
+       {
+         data && data.length > 0 ? (
+           data.map((item,index)=>{
+             return(
+              <TouchableOpacity style={styles.cards} key={index}>
+                {
+                  getVal == item.Name ? (
+                    <Animated.View
+                    style={
+                      {
+                        // Bind opacity to animated value
+                        opacity: fadeAnim,
+                        position:'absolute'
+                      }
+                    }
+                  >
+                    <View style={styles.carddir}>
+                                  <View style={{width:wp('42%'),padding:10}}>
+                                    <Text
+                                      style={{
+                                        fontSize: 14,
+                                        fontWeight:'bold',textAlign:'center',color:'orange',textTransform:'uppercase'
+                                      }}>
+                                      {' '}
+                                      Find Similar{' '}
+                                    </Text>
+                                  </View>
+            
+                                </View>
+                                <View style={[styles.carddir,{  borderTopColor: 'lightgray',
+                borderTopWidth: 1,}]}>
+                                  <View style={{width:wp('42%'),padding:10}}>
+                                    <Text
+                                      style={{
+                                        fontSize: 14,
+                                        fontWeight:'bold',textAlign:'center',color:'orange',textTransform:'uppercase'
+                                      }}>
+                                      {' '}
+                                      Add To Favourites{' '}
+                                    </Text>
+                                  </View>
+            
+                                </View>
+                                <View style={styles.carddir}>
+                                  <View style={{width:wp('42%'),padding:10,backgroundColor:'orange',height:hp('21.5%'),borderRadius:20,alignItem:'center',justifyContent:'center',borderTopRightRadius:35,borderTopLeftRadius:35}}>
+                                    <TouchableOpacity onPress={()=>{fadeOut()}}>
+                                      <Text
+                                        style={{
+                                          fontSize: 14,
+                                          fontWeight:'bold',textAlign:'center',color:'#fff',textTransform:'uppercase'
+                                        }}>
+                                        {' '}
+                                        <AntDesign name={'shoppingcart'} size={20} color={'#fff'} />{'  '}Add To Cart
+                                      </Text>
+                                    </TouchableOpacity>
+                                  </View>
+            
+                                </View>
+                                 
+                            
+                  </Animated.View>
+                  ) : (
+                    <Animated.View style={{opacity:getVal == item.Name ? fadeAnimation : 1}}>
                     <View style={styles.carddir}>
                       <View>
                         <Text
@@ -114,7 +193,7 @@ export const AppsScreen = () => {
                             fontWeight:'bold'
                           }}>
                           {' '}
-                          Vegetables{' '}
+                          {item.Category}{' '}
                         </Text>
                       </View>
 
@@ -127,7 +206,7 @@ export const AppsScreen = () => {
                             fontWeight:'900'
                           }}>
                           {' '}
-                          Vegetables bsjchvhsdc n{' '}
+                          {item.Name}
                         </Text>
                       </View>
 
@@ -137,10 +216,7 @@ export const AppsScreen = () => {
                       <Image
                         resizeMode="contain"
                         style={{height: 100, width: 150}}
-                        source={{
-                          uri:
-                            'https://jeebajijee.pk/public/images/products/featured/1608038095MuttonPayafresh.png'
-                        }}
+                        source={{uri:item.Image}}
                       />
                     </View>
 
@@ -151,74 +227,29 @@ export const AppsScreen = () => {
                           fontSize: 16,
                           fontWeight: 'bold',
                         }}>
-                        RS. 110
+                        $. {item.Price}
                       </Text>
 
                     </View>
         </Animated.View>
-        <Animated.View
-        style={
-          {
-            // Bind opacity to animated value
-            opacity: fadeAnim,
-            position:'absolute'
-          }
-        }
-      >
-        <View style={styles.carddir}>
-                      <View style={{width:wp('42%'),padding:10}}>
-                        <Text
-                          style={{
-                            fontSize: 14,
-                            fontWeight:'bold',textAlign:'center',color:'orange'
-                          }}>
-                          {' '}
-                          Vegetables{' '}
-                        </Text>
-                      </View>
+                  )
+                }
 
-                    </View>
-                    <View style={[styles.carddir,{  borderTopColor: 'lightgray',
-    borderTopWidth: 1,}]}>
-                      <View style={{width:wp('42%'),padding:10}}>
-                        <Text
-                          style={{
-                            fontSize: 14,
-                            fontWeight:'bold',textAlign:'center',color:'orange'
-                          }}>
-                          {' '}
-                          Vegetables{' '}
-                        </Text>
-                      </View>
 
-                    </View>
-                    <View style={styles.carddir}>
-                      <View style={{width:wp('42%'),padding:10,backgroundColor:'orange',height:hp('21.5%'),borderRadius:20,alignItem:'center',justifyContent:'center',borderTopRightRadius:35,borderTopLeftRadius:35}}>
-                        <TouchableOpacity onPress={()=>{fadeOut()}}>
-                          <Text
-                            style={{
-                              fontSize: 14,
-                              fontWeight:'bold',textAlign:'center',color:'#fff'
-                            }}>
-                            {' '}
-                            <AntDesign name={'shoppingcart'} size={20} color={'#fff'} />{'  '}Add To Cart
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-
-                    </View>
+                     {
+                       getVal !== item.Name ? 
                      
-                
-      </Animated.View>
-              {
-                !check ? 
-              
-                          <TouchableOpacity onPress={()=>{fadeIn()}} style={{position:'absolute',bottom:0,right:0,backgroundColor:'orange',borderBottomRightRadius:10,padding:10,borderTopLeftRadius:10}}>
-                              <AntDesign name={'plus'} size={20} color={'#fff'} />
-                          </TouchableOpacity>
-            :null  
-            }
-      </TouchableOpacity>
+                                 <TouchableOpacity onPress={()=>{fadeIn(item.Name)}} style={{position:'absolute',bottom:0,right:0,backgroundColor:'orange',borderBottomRightRadius:10,padding:10,borderTopLeftRadius:10}}>
+                                     <AntDesign name={'plus'} size={20} color={'#fff'} />
+                                 </TouchableOpacity>
+                   :null  
+                   }
+             </TouchableOpacity>
+             )
+           })
+         ) : null
+       }
+    
     
           </View>
      </ScrollView>
